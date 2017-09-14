@@ -5,6 +5,9 @@ import java.util.Scanner;
 
 public class Main {
 	
+	static int DARTS501_INITIAL_SCORE = 501;
+	static int DARTS_PER_TURN = 3;
+	
 	private final JudgeInterface judgeInterface;
 
 	
@@ -23,15 +26,42 @@ public class Main {
 		}
 	}
 	
-	public void compete() {
-		// TODO
-		int darts = 99999;
+	public int compete(int darts, int score) {
+		int turnDarts = DARTS_PER_TURN;
+		while (darts > 0) {
+			
+			Point2D.Double target = null;	// FIXME
+			
+			final ThrowingResult result = judgeInterface.throwDart(target);
+			--darts;
+			--turnDarts;
+			final int dartScore = (result.points > 0) ? result.multiplier * result.points : 0;
+			score -= dartScore;
+			
+			if (score < 0 || (score == 0 && result.multiplier != 2) || score == 1) {	// invalid turn
+				
+				score += dartScore;
+				darts -= turnDarts;
+				turnDarts = 0;
+				
+			} else if (score == 0 && result.multiplier == 2) {							// leg end
+				
+				score = DARTS501_INITIAL_SCORE;
+				turnDarts = 0;
+			}			
+			
+			// leg/turn end
+			if (turnDarts == 0) {
+				turnDarts = DARTS_PER_TURN;
+			}
+		}
+		return score;
 	}
 
 	public static void main(String[] args) {
 		Main solution = new Main(new StdJudgeInterface());
 		solution.practice(1);
-		solution.compete();
+		solution.compete(99999, DARTS501_INITIAL_SCORE);
 	}
 }
 

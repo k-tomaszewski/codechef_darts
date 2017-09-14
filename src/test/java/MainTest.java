@@ -1,4 +1,5 @@
 import java.awt.geom.Point2D;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -19,4 +20,52 @@ public class MainTest {
 		Mockito.verify(judgeIfaceMock, Mockito.times(1000)).throwDart(Mockito.any(Point2D.Double.class));
 	}
 	
+	@Test
+	public void shouldCorrectlyHandle1stSampleCase() {
+		// given
+		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
+		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
+			.thenReturn(new ThrowingResult(null, 2, 20), new ThrowingResult(null, 3, 19), new ThrowingResult(null, 2, 25));
+		
+		Main solution = new Main(judgeIfaceMock);
+		
+		// when
+		int scoreAfter = solution.compete(3, Main.DARTS501_INITIAL_SCORE);
+		
+		// then
+		Assert.assertEquals(354, scoreAfter);
+	}
+	
+	@Test
+	public void shouldCorrectlyHandle2ndSampleCase() {
+		// given
+		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
+		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
+			.thenReturn(new ThrowingResult(null, 3, 20), new ThrowingResult(null, 2, 20));
+		
+		Main solution = new Main(judgeIfaceMock);
+		
+		// when
+		int scoreAfter = solution.compete(2, 100);
+		
+		// then
+		Assert.assertEquals(Main.DARTS501_INITIAL_SCORE, scoreAfter);		
+	}
+	
+	@Test
+	public void shouldCorrectlyHandle3rdSampleCase() {
+		// given
+		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
+		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
+			.thenReturn(new ThrowingResult(null, 1, 19));
+		
+		Main solution = new Main(judgeIfaceMock);
+		
+		// when
+		int scoreAfter = solution.compete(3, 20);
+		
+		// then
+		Assert.assertEquals(20, scoreAfter);
+		Mockito.verify(judgeIfaceMock, Mockito.times(1)).throwDart(Mockito.nullable(Point2D.Double.class));
+	}
 }
