@@ -63,7 +63,7 @@ public class Main {
 	}
 	
 	Point2D.Double selectTarget(int score) {
-		return null;
+		return null;	// FIXME
 	}
 }
 
