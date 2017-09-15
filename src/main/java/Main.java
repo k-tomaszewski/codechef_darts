@@ -28,10 +28,8 @@ public class Main {
 	
 	public int compete(int darts, int score) {
 		int turnDarts = DARTS_PER_TURN;
-		while (darts > 0) {
-			
-			Point2D.Double target = null;	// FIXME
-			
+		while (darts > 0) {			
+			final Point2D.Double target = selectTarget(score);
 			final ThrowingResult result = judgeInterface.throwDart(target);
 			--darts;
 			--turnDarts;
@@ -62,6 +60,10 @@ public class Main {
 		Main solution = new Main(new StdJudgeInterface());
 		solution.practice(1);
 		solution.compete(99999, DARTS501_INITIAL_SCORE);
+	}
+	
+	Point2D.Double selectTarget(int score) {
+		return null;
 	}
 }
 

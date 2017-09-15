@@ -1,15 +1,23 @@
 import java.awt.geom.Point2D;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 
 public class MainTest {
 	
+	JudgeInterface judgeIfaceMock;
+
+	
+	@Before
+	public void init() {
+		judgeIfaceMock = Mockito.mock(JudgeInterface.class);	
+	}
+	
 	@Test
 	public void shouldThrowAsManyPracticingDartsAsDeclared() {
 		// given
-		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
 		Main solution = new Main(judgeIfaceMock);
 		
 		// when
@@ -23,7 +31,6 @@ public class MainTest {
 	@Test
 	public void shouldCorrectlyHandle1stSampleCase() {
 		// given
-		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
 		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
 			.thenReturn(new ThrowingResult(null, 2, 20), new ThrowingResult(null, 3, 19), new ThrowingResult(null, 2, 25));
 		
@@ -39,7 +46,6 @@ public class MainTest {
 	@Test
 	public void shouldCorrectlyHandle2ndSampleCase() {
 		// given
-		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
 		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
 			.thenReturn(new ThrowingResult(null, 3, 20), new ThrowingResult(null, 2, 20));
 		
@@ -55,7 +61,6 @@ public class MainTest {
 	@Test
 	public void shouldCorrectlyHandle3rdSampleCase() {
 		// given
-		JudgeInterface judgeIfaceMock = Mockito.mock(JudgeInterface.class);
 		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
 			.thenReturn(new ThrowingResult(null, 1, 19));
 		

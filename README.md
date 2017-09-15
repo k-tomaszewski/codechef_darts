@@ -5,4 +5,4 @@ This is provided as a single class (Main) in a default package because
 of requirements given by codechef.com platform.
 
 Building the project:
-`mvn clean package
+`mvn clean package`
