@@ -1,0 +1,13 @@
+-exec "executed program path"
+-seed "number"
+-novis
+-deviation "number"
+
+example:
+
+java -jar Darts.jar -exec cc.exe -deviaton 0.15 -delay 200
+
+you can also play manually:
+
+java -jar Darts.jar -deviation 0.1 
+
