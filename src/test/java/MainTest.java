@@ -80,7 +80,7 @@ public class MainTest {
 	@Test
 	public void shouldGenerateProperBoard() {
 		// when
-		Set<BoardField> fields = Main.generateBoardFields();
+		var fields = Main.generateBoardFields();
 		// then
 		Assert.assertEquals(82, fields.size());
 	}
