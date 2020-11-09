@@ -60,31 +60,41 @@ public class Main {
 		boardFields.forEach(field -> LOG.info("{} -> score expected value: {}", field, field.getScoreExpectedValue()));
 	}
 	
-	public int compete(int darts, int score) {
+	public int compete(int darts, Integer initialScore) {
+		int score = (initialScore != null) ? initialScore : DARTS501_INITIAL_SCORE;
 		int turnDarts = DARTS_PER_TURN;
-		while (darts > 0) {			
-			final Point2D.Double target = selectTarget(score);
-			final ThrowingResult result = judgeInterface.throwDart(target);
-			--darts;
+		int turnScore = 0;
+
+		while (darts > 0) {
+			final ThrowingResult result;
+			try {
+                result = judgeInterface.throwDart(selectTarget(score));
+            } catch (RuntimeException e) {
+			    throw new RuntimeException(String.format("Error occurred when darts=%d, score=%d, turn-darts=%d, turn-score=%d",
+                        darts, score, turnDarts, turnScore), e);
+            }
+            --darts;
 			--turnDarts;
 			final int dartScore = (result.score > 0) ? result.multiplier * result.score : 0;
-			score -= dartScore;
-			
-			if (score < 0 || (score == 0 && result.multiplier != 2) || score == 1) {	// invalid turn
-				
-				score += dartScore;
-				darts -= turnDarts;
-				turnDarts = 0;
-				
-			} else if (score == 0 && result.multiplier == 2) {							// leg end
-				
+			turnScore += dartScore;
+
+			if (score == turnScore && result.multiplier == 2) {
+				// leg end
 				score = DARTS501_INITIAL_SCORE;
-				turnDarts = 0;
-			}			
-			
-			// leg/turn end
-			if (turnDarts == 0) {
 				turnDarts = DARTS_PER_TURN;
+				turnScore = 0;
+
+			} else if (score <= turnScore + 1) {
+				// invalid turn
+				darts -= turnDarts;
+				turnDarts = DARTS_PER_TURN;
+				turnScore = 0;
+
+			} else if (turnDarts == 0) {
+				// turn end
+				score -= turnScore;
+				turnDarts = DARTS_PER_TURN;
+				turnScore = 0;
 			}
 		}
 		return score;
@@ -95,7 +105,7 @@ public class Main {
 		try {
 			Main solution = new Main(new StdJudgeInterface());
 			solution.practice(100000);
-			solution.compete(99999, DARTS501_INITIAL_SCORE);
+			solution.compete(99999, null);
 			LOG.info("Completed normally.");
 		} catch (RuntimeException e) {
 			LOG.error("Completed with error.", e);
@@ -103,8 +113,17 @@ public class Main {
 	}
 
 	Point2D.Double selectTarget(int score) {
-		throw new UnsupportedOperationException("Throwing darts not implemented yet");	// FIXME
+	    if (isOdd(score)) {
+	        // we need to hit a field with odd score
+            return boardFields.stream().filter(field -> isOdd(field.getScore()) && isOdd(field.getMultiplier()))
+                    .findFirst().map(BoardField::getCorrectedTarget).get();
+        }
+	    return new Point2D.Double(0.0, 0.0);
 	}
+
+	static boolean isOdd(int x) {
+	    return x % 2 == 1;
+    }
 
 	static List<BoardField> generateBoardFields() {
 		List<BoardField> fields = new ArrayList<>();
@@ -160,11 +179,11 @@ class StdJudgeInterface implements JudgeInterface {
 		System.out.format(Locale.ROOT, "%f %f\n", target.x, target.y);
 		System.out.flush();
 
-		var value1 = scanner.next();
-		var value2 = scanner.next();
-		var value3 = scanner.next();
-		var value4 = scanner.next();
-		return new ThrowingResult(new Point2D.Double(parseDouble(value1), parseDouble(value2)), parseInt(value3), parseInt(value4));
+		var actualX = scanner.next();
+		var actualY = scanner.next();
+		var multiplier = scanner.next();
+		var score = scanner.next();
+		return new ThrowingResult(new Point2D.Double(parseDouble(actualX), parseDouble(actualY)), parseInt(multiplier), parseInt(score));
 	}
 }
 
@@ -176,6 +195,9 @@ class ThrowingResult {
 	final int score;
 
 	public ThrowingResult(Point2D.Double point, int multiplier, int score) {
+		if (multiplier < 1 || multiplier > 3) {
+			throw new IllegalArgumentException(String.format("Invalid multiplier: %d", multiplier));
+		}
 		this.point = point;
 		this.multiplier = multiplier;
 		this.score = score;

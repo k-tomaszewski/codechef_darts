@@ -1,11 +1,9 @@
-import java.awt.geom.Point2D;
-import java.io.PrintWriter;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.awt.geom.Point2D;
 
 
 public class MainTest {
@@ -31,7 +29,7 @@ public class MainTest {
 		Mockito.verify(judgeIfaceMock, Mockito.times(1000)).throwDart(Mockito.any(Point2D.Double.class));
 	}
 	
-	//@Test
+	@Test
 	public void shouldCorrectlyHandle1stSampleCase() {
 		// given
 		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
@@ -45,23 +43,23 @@ public class MainTest {
 		// then
 		Assert.assertEquals(354, scoreAfter);
 	}
-	
-	//@Test
+
+	@Test
 	public void shouldCorrectlyHandle2ndSampleCase() {
 		// given
 		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
 			.thenReturn(new ThrowingResult(SOME_POINT, 3, 20), new ThrowingResult(SOME_POINT, 2, 20));
-		
+
 		Main solution = new Main(judgeIfaceMock);
-		
+
 		// when
 		int scoreAfter = solution.compete(2, 100);
-		
+
 		// then
-		Assert.assertEquals(Main.DARTS501_INITIAL_SCORE, scoreAfter);		
+		Assert.assertEquals(Main.DARTS501_INITIAL_SCORE, scoreAfter);
 	}
 	
-	//@Test
+	@Test
 	public void shouldCorrectlyHandle3rdSampleCase() {
 		// given
 		Mockito.when(judgeIfaceMock.throwDart(Mockito.nullable(Point2D.Double.class)))
