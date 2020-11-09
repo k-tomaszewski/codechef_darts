@@ -40,20 +40,19 @@ public class Main {
 		judgeInterface.publishPracticingDartsCount(dartsPerField * boardFields.size() * 2);
 
 		for (BoardField field : boardFields) {
-			LOG.info(">>> Calculating average targeting delta for {}...", field);
-			final var fieldCenter = field.getTarget();
+
+			final Point2D.Double fieldCenter = field.getTarget();
 			for (int i = 0; i < dartsPerField; ++i) {
 				ThrowingResult result = judgeInterface.throwDart(fieldCenter);
 				field.addTargetingDelta(new Point2D.Double(fieldCenter.x - result.point.x, fieldCenter.y - result.point.y));
 			}
 
-			LOG.info(">>> Testing accuracy for {} with correction {}...", field, field.getAvgTargetingDelta());
-			final var correctedTarget = field.getCorrectedTarget();
+			final Point2D.Double correctedTarget = field.getCorrectedTarget();
 			for (int i = 0; i < dartsPerField; ++i) {
 				ThrowingResult result = judgeInterface.throwDart(correctedTarget);
 				field.registerResult(result.score == field.getScore() && result.getMultiplier() == field.getMultiplier());
 			}
-			LOG.info(">>>> Accuracy: {} %", field.getAccuracy() * 100.0);
+			LOG.info(">>>> Accuracy for {}: {} %", field, field.getAccuracy() * 100.0);
 		}
 
 		boardFields.sort(SCORE_EXPECTED_VALUE_COMPARATOR);
@@ -66,9 +65,10 @@ public class Main {
 		int turnScore = 0;
 
 		while (darts > 0) {
+			final BoardField target = selectTarget(score - turnScore);
 			final ThrowingResult result;
 			try {
-                result = judgeInterface.throwDart(selectTarget(score));
+                result = judgeInterface.throwDart(target.getCorrectedTarget());
             } catch (RuntimeException e) {
 			    throw new RuntimeException(String.format("Error occurred when darts=%d, score=%d, turn-darts=%d, turn-score=%d",
                         darts, score, turnDarts, turnScore), e);
@@ -84,7 +84,12 @@ public class Main {
 				turnDarts = DARTS_PER_TURN;
 				turnScore = 0;
 
+				LOG.info("LEG END");
+
 			} else if (score <= turnScore + 1) {
+
+				LOG.info("INVALID TURN. score={} turnScore={} target={} result={}", score, turnScore, target, result);
+
 				// invalid turn
 				darts -= turnDarts;
 				turnDarts = DARTS_PER_TURN;
@@ -112,18 +117,12 @@ public class Main {
 		}
 	}
 
-	Point2D.Double selectTarget(int score) {
-	    if (isOdd(score)) {
-	        // we need to hit a field with odd score
-            return boardFields.stream().filter(field -> isOdd(field.getScore()) && isOdd(field.getMultiplier()))
-                    .findFirst().map(BoardField::getCorrectedTarget).get();
-        }
-	    return new Point2D.Double(0.0, 0.0);
+	BoardField selectTarget(int score) {
+		return boardFields.stream().filter(field -> {
+				final int fieldScore = field.getScore() * field.getMultiplier();
+				return (score - fieldScore > 1) || (score == fieldScore && field.getMultiplier() == 2);
+			}).findFirst().get();
 	}
-
-	static boolean isOdd(int x) {
-	    return x % 2 == 1;
-    }
 
 	static List<BoardField> generateBoardFields() {
 		List<BoardField> fields = new ArrayList<>();
@@ -172,17 +171,16 @@ class StdJudgeInterface implements JudgeInterface {
 	public void publishPracticingDartsCount(int n) {
 		System.out.println(n);
 		System.out.flush();
-		Main.LOG.info("Practice session with {} darts.", n);
 	}
 
 	public ThrowingResult throwDart(Point2D.Double target) {
 		System.out.format(Locale.ROOT, "%f %f\n", target.x, target.y);
 		System.out.flush();
 
-		var actualX = scanner.next();
-		var actualY = scanner.next();
-		var multiplier = scanner.next();
-		var score = scanner.next();
+		String actualX = scanner.next();
+		String actualY = scanner.next();
+		String multiplier = scanner.next();
+		String score = scanner.next();
 		return new ThrowingResult(new Point2D.Double(parseDouble(actualX), parseDouble(actualY)), parseInt(multiplier), parseInt(score));
 	}
 }
@@ -213,6 +211,11 @@ class ThrowingResult {
 
 	public int getScore() {
 		return score;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("(%.2f; %.2f) %dx%d", point.x, point.y, score, multiplier);
 	}
 }
 

@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 
 public class MainTest {
@@ -78,7 +79,7 @@ public class MainTest {
 	@Test
 	public void shouldGenerateProperBoard() {
 		// when
-		var fields = Main.generateBoardFields();
+		List<BoardField> fields = Main.generateBoardFields();
 		// then
 		Assert.assertEquals(82, fields.size());
 	}
